@@ -1,5 +1,6 @@
-import Data.List
+module Code where
 
+import Data.List
 
 splitOnComma :: String -> [String]
 splitOnComma string = map (filter (/= ',')) (groupBy (\a b -> b /= ',') string)
@@ -29,11 +30,11 @@ type Path = [Location]
 getNextLocation :: Direction -> Location -> Location
 getNextLocation U (x, y) = (x, y + 1)
 getNextLocation D (x, y) = (x, y - 1)
-getNextLocation L (x, y) = (x + 1, y)
-getNextLocation R (x, y) = (x - 1, y)
+getNextLocation L (x, y) = (x - 1, y)
+getNextLocation R (x, y) = (x + 1, y)
 
 createPath :: ParsedString -> Path
-createPath path = go (head path) path (0,0) []
+createPath path = go (head path) (tail path) (0,0) []
     where go (dir, 0) [] _ total = total
           go (dir, 0) (x:xs) currentLocation total = go x xs currentLocation total
           go (dir, num) xs currentLocation total = go (dir, num - 1) xs newLocation (total ++ [newLocation])
@@ -42,12 +43,12 @@ createPath path = go (head path) path (0,0) []
 path1 = createPath $ parseInput testData
 path2 = createPath $ parseInput testData2
 -- test = 
-joinPointsTuple = filter (\((x, y), (x1, y1)) -> x == x1 && y == y1) [(x, y) | x <- path1, y <- path2]
-joinPoints = map fst joinPointsTuple
+
+excludeOrigin = filter (/= (0,0))
+joinPoints = excludeOrigin $ path1 `intersect` path2
+
 
 getManhattenDistance :: Location -> Int
-getManhattenDistance (x, y) = x + y
+getManhattenDistance (x, y) = abs x + abs y
 
-getMin = foldr1 min
-
-shortestDistance = getMin $ map (abs . getManhattenDistance) joinPoints
+shortestDistance = minimum $ map (getManhattenDistance) joinPoints
